@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, ReactNode, useEffect, useState } from "react";
+import React, { useRef, ReactNode, useEffect, useState } from "react";
 import { useSpring, animated, config } from "@react-spring/web";
 import { useDrag } from "@use-gesture/react";
 
@@ -10,14 +10,14 @@ type DraggableProps = {
 };
 
 export default function Draggable({ children, handleSelector }: DraggableProps) {
-  const [_, setReady] = useState(false);
+  const [, setReady] = useState(false);
   const domTarget = useRef<HTMLDivElement>(null);
 
-  const getRandomPosition = (delay: number): {x: number, y: number, scale: number, delay: number} => {
+  const getRandomPosition = (delay: number): { x: number; y: number; scale: number; delay: number } => {
     const el = domTarget.current;
     if (!el) {
-      return { x: 0, y: 0, scale: 0, delay: 0 }
-    };
+      return { x: 0, y: 0, scale: 0, delay: 0 };
+    }
 
     const width = el.offsetWidth;
     const height = el.offsetHeight;
@@ -27,13 +27,12 @@ export default function Draggable({ children, handleSelector }: DraggableProps) 
 
     const randX = Math.floor(Math.random() * maxX);
     const randY = Math.floor(Math.random() * maxY);
-    return { x: randX, y: randY, scale: 1, delay};
-  }
+    return { x: randX, y: randY, scale: 1, delay };
+  };
 
   const [{ x, y, scale }, api] = useSpring(() => {
     return getRandomPosition(150);
   }, [domTarget.current]);
-
 
   useEffect(() => {
     const centerAndReset = () => {
@@ -41,16 +40,16 @@ export default function Draggable({ children, handleSelector }: DraggableProps) 
       if (!el) return;
       const width = el.offsetWidth;
       const height = el.offsetHeight;
-  
+
       const centerX = (window.innerWidth - width) / 2;
       const centerY = (window.innerHeight - height) / 2;
 
       api.start({ x: centerX, y: centerY, config: config.gentle });
     };
-  
+
     const randomStart = () => {
       const randomPosition = getRandomPosition(0);
-  
+
       Promise.all(api.start({ ...randomPosition, config: config.gentle })).then(() => {
         setReady(true);
       });
@@ -58,9 +57,9 @@ export default function Draggable({ children, handleSelector }: DraggableProps) 
 
     randomStart();
     window.addEventListener("resize", centerAndReset);
-  
+
     return () => window.removeEventListener("resize", centerAndReset);
-  }, []);  
+  }, []);
 
   const bind = useDrag(
     ({ down, offset: [dx, dy], velocity: [vx, vy], direction: [dxn, dyn], target, last }) => {
@@ -86,7 +85,7 @@ export default function Draggable({ children, handleSelector }: DraggableProps) 
         api.start({
           x: clamp(momentumX, 0, maxX),
           y: clamp(momentumY, 0, maxY),
-          config: config.gentle
+          config: config.gentle,
         });
       }
     },
@@ -103,16 +102,11 @@ export default function Draggable({ children, handleSelector }: DraggableProps) 
         };
       },
       rubberband: false,
-    }
+    },
   );
 
   return (
-    <animated.div
-      ref={domTarget}
-      {...bind()}
-      style={{x, y, scale, touchAction: "none" }}
-      className="fixed z-50"
-    >
+    <animated.div ref={domTarget} {...bind()} style={{ x, y, scale, touchAction: "none" }} className="fixed z-50">
       {children}
     </animated.div>
   );

@@ -20,8 +20,8 @@ const MacDir = () => (
           </button>
         </aside>
         <div className="flex-1 overflow-x-auto bg-zinc-50">
-          <div className="p-4 drag-handle">
-            <p className="font-medium text-zinc-700">jadeshenker.dev</p>
+          <div className="p-4 drag-handle touch-none">
+            <p className="font-medium text-zinc-700 touch-none">jadeshenker.dev</p>
           </div>
           <ContentTable />
         </div>

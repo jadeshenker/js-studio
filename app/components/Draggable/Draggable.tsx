@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useRef, ReactNode, useEffect, useState } from "react";
+import React, { useRef, ReactNode, useEffect } from "react";
 import { useSpring, animated, config } from "@react-spring/web";
 import { useDrag } from "@use-gesture/react";
+import { to } from "@react-spring/web";
 
 type DraggableProps = {
   children: ReactNode;
@@ -10,8 +11,8 @@ type DraggableProps = {
 };
 
 export default function Draggable({ children, handleSelector }: DraggableProps) {
-  const [, setReady] = useState(false);
   const domTarget = useRef<HTMLDivElement>(null);
+  const isMobile = () => window.innerWidth < 768;
 
   const getRandomPosition = (delay: number): { x: number; y: number; scale: number; delay: number } => {
     const el = domTarget.current;
@@ -30,35 +31,51 @@ export default function Draggable({ children, handleSelector }: DraggableProps) 
     return { x: randX, y: randY, scale: 1, delay };
   };
 
-  const [{ x, y, scale }, api] = useSpring(() => {
-    return getRandomPosition(150);
-  }, [domTarget.current]);
+  const getCenteredPosition = (): { x: number; y: number } => {
+    const el = domTarget.current;
+    if (!el) return { x: 0, y: 0 };
+    const width = el.offsetWidth;
+    const height = el.offsetHeight;
+
+    const centerX = (window.innerWidth - width) / 2;
+    const centerY = (window.innerHeight - height) / 2;
+
+    return { x: centerX, y: centerY };
+  };
+
+  const [{ x, y, scale }, api] = useSpring(() => ({
+    x: 0,
+    y: 0,
+    scale: 0,
+    delay: 200,
+  }));
 
   useEffect(() => {
     const centerAndReset = () => {
-      const el = domTarget.current;
-      if (!el) return;
-      const width = el.offsetWidth;
-      const height = el.offsetHeight;
-
-      const centerX = (window.innerWidth - width) / 2;
-      const centerY = (window.innerHeight - height) / 2;
-
-      api.start({ x: centerX, y: centerY, config: config.gentle });
+      api.start({ ...getCenteredPosition(), config: config.gentle });
     };
 
     const randomStart = () => {
       const randomPosition = getRandomPosition(0);
 
-      Promise.all(api.start({ ...randomPosition, config: config.gentle })).then(() => {
-        setReady(true);
-      });
+      Promise.all(api.start({ ...randomPosition, config: config.gentle })).then(() => {});
     };
 
-    randomStart();
+    if (isMobile()) {
+      centerAndReset();
+    } else {
+      randomStart();
+    }
+
     window.addEventListener("resize", centerAndReset);
 
     return () => window.removeEventListener("resize", centerAndReset);
+  }, []);
+
+  useEffect(() => {
+    const preventScroll = (e: TouchEvent) => e.preventDefault();
+    document.body.addEventListener("touchmove", preventScroll, { passive: false });
+    return () => document.body.removeEventListener("touchmove", preventScroll);
   }, []);
 
   const bind = useDrag(
@@ -102,11 +119,21 @@ export default function Draggable({ children, handleSelector }: DraggableProps) 
         };
       },
       rubberband: false,
+      threshold: 4,
+      pointer: { touch: true },
     },
   );
 
   return (
-    <animated.div ref={domTarget} {...bind()} style={{ x, y, scale, touchAction: "none" }} className="fixed z-50">
+    <animated.div
+      ref={domTarget}
+      {...bind()}
+      style={{
+        transform: to([x, y, scale], (x, y, scale) => `translate3d(${x}px, ${y}px, 0) scale(${scale})`),
+        touchAction: "none",
+      }}
+      className="fixed z-50"
+    >
       {children}
     </animated.div>
   );

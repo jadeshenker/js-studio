@@ -31,16 +31,18 @@ export default function Draggable({ children, handleSelector }: DraggableProps) 
     return { x: randX, y: randY, scale: 1, delay };
   };
 
-  const getCenteredPosition = (): { x: number; y: number } => {
+  const getCenteredPosition = (delay: number): { x: number; y: number; scale: number; delay: number } => {
     const el = domTarget.current;
-    if (!el) return { x: 0, y: 0 };
+    if (!el) {
+      return { x: 0, y: 0, scale: 0, delay: 0 };
+    }
+
     const width = el.offsetWidth;
     const height = el.offsetHeight;
 
     const centerX = (window.innerWidth - width) / 2;
     const centerY = (window.innerHeight - height) / 2;
-
-    return { x: centerX, y: centerY };
+    return { x: centerX, y: centerY, scale: 1, delay };
   };
 
   const [{ x, y, scale }, api] = useSpring(() => ({
@@ -52,7 +54,9 @@ export default function Draggable({ children, handleSelector }: DraggableProps) 
 
   useEffect(() => {
     const centerAndReset = () => {
-      api.start({ ...getCenteredPosition(), config: config.gentle });
+      const centeredPosition = getCenteredPosition(0);
+
+      Promise.all(api.start({ ...centeredPosition, config: config.gentle })).then(() => {});
     };
 
     const randomStart = () => {

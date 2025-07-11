@@ -1,77 +1,131 @@
-import React from "react";
+"use client";
 
-const rows = [
-  {
-    icon: "💌",
-    alt: "love letter",
-    name: "are.na",
-    type: "hyperlink",
-    modified: "today, probably",
-    link: "https://www.are.na/jade-s-ewpvxvqauig/channels",
-  },
-  {
-    icon: "🎧",
-    alt: "headphones",
-    name: "what i am listening to today",
-    type: "hyperlink",
-    modified: "today, probably",
-    link: "https://open.spotify.com/playlist/4KVoTfuOy5plZd0jKVx8qs?si=bae8fd0e07f7429a",
-  },
-  {
-    icon: "💾",
-    alt: "floppy disk",
-    name: "github",
-    type: "hyperlink",
-    modified: "past week, maybe",
-    link: "https://github.com/jadeshenker",
-  },
-  {
-    icon: "💀",
-    alt: "skull",
-    name: "linkedin (!!!ick!!!)",
-    type: "hyperlink",
-    modified: "past week, maybe",
-    link: "https://www.linkedin.com/in/jadeshenker",
-  },
-];
+import React, { useEffect, useState } from "react";
 
-const ContentTable = () => (
-  <table className="min-w-full bg-white">
-    <thead>
-      <tr className="text-left text-zinc-500 text-sm border-t border-t-zinc-200 border-b border-b-zinc-200">
-        <th className="font-normal px-4 py-2">name</th>
-        <th className="font-normal px-4 py-2">type</th>
-        <th className="px-4 py-2">date modified</th>
-      </tr>
-    </thead>
-    <tbody>
-      {rows.map((row, i) => (
-        <tr key={i} className={`${i % 2 === 1 ? "bg-zinc-100" : ""} rounded-md text-sm text-zinc-800`}>
-          <td className="px-4 py-3">
-            <div className="flex flex-row align-center">
-              <span className="pr-2 block" role="img" aria-label={row.alt}>
-                {row.icon}
-              </span>
-              {row.type === "hyperlink" ? (
-                <a
-                  target="_blank"
-                  href={row.link}
-                  className="block text-[#1B0DF8]  hover:bg-[#1B0DF8] hover:text-white transition"
-                  rel="noreferrer"
-                >
-                  {row.name}
-                </a>
-              ) : (
-                row.name
-              )}
-            </div>
-          </td>
-          <td className="px-4 py-3 text-zinc-500">{row.type}</td>
-          <td className="px-4 py-3 text-zinc-500">{row.modified}</td>
+interface Channel {
+  added_to_at: string;
+}
+
+interface Row {
+  icon: string;
+  alt: string;
+  name: string;
+  kind: string;
+  modified: string;
+  link: string;
+}
+
+/**
+ * @param dateString datetime string
+ * @returns formatted date, ie "May 14, 2025 at 11:29 PM"
+ */
+const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+
+  const d = new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  }).format(date);
+
+  const t = new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).format(date);
+
+  return `${d} at ${t}`;
+};
+
+const ContentTable = () => {
+  const [channels, setChannels] = useState<Channel[]>([]);
+  useEffect(() => {
+    fetch("/api/channels")
+      .then((res) => res.json())
+      .then((data) => {
+        const channels = (data.channels as Channel[]) || [];
+        const sortedChannels = channels.sort((a, b) =>
+          a.added_to_at > b.added_to_at ? -1 : b.added_to_at > a.added_to_at ? 1 : 0,
+        );
+
+        setChannels(sortedChannels);
+      })
+      .catch((err) => console.log(err));
+  }, []);
+
+  const rows: Row[] = [
+    {
+      icon: "💌",
+      alt: "love letter",
+      name: "are.na",
+      kind: "hyperlink",
+      modified: `${channels[0] ? formatDate(channels[0].added_to_at) : "today, probably"}`,
+      link: "https://www.are.na/jade-s-ewpvxvqauig/channels",
+    },
+    {
+      icon: "🎧",
+      alt: "headphones",
+      name: "what i am listening to today",
+      kind: "hyperlink",
+      modified: "today, probably",
+      link: "https://open.spotify.com/playlist/4KVoTfuOy5plZd0jKVx8qs?si=bae8fd0e07f7429a",
+    },
+    {
+      icon: "💾",
+      alt: "floppy disk",
+      name: "github",
+      kind: "hyperlink",
+      modified: "past week, maybe",
+      link: "https://github.com/jadeshenker",
+    },
+    {
+      icon: "💀",
+      alt: "skull",
+      name: "linkedin (ick!)",
+      kind: "hyperlink",
+      modified: "past week, maybe",
+      link: "https://www.linkedin.com/in/jadeshenker",
+    },
+  ];
+
+  return (
+    <table className="min-w-full bg-white">
+      <thead>
+        <tr className="text-left text-zinc-500 text-sm border-t border-t-zinc-200 border-b border-b-zinc-200">
+          <th className="font-normal px-4 py-2">Name</th>
+          <th className="px-4 py-2">Date Modified</th>
+          <th className="font-normal px-4 py-2">Kind</th>
         </tr>
-      ))}
-    </tbody>
-  </table>
-);
+      </thead>
+      <tbody>
+        {rows.map((row, i) => (
+          <tr key={i} className={`${i % 2 === 1 ? "bg-zinc-100" : ""} rounded-md text-sm text-zinc-800`}>
+            <td className="px-4 py-3">
+              <div className="flex flex-row align-center">
+                <span className="pr-2 block" role="img" aria-label={row.alt}>
+                  {row.icon}
+                </span>
+                {row.kind === "hyperlink" ? (
+                  <a
+                    target="_blank"
+                    href={row.link}
+                    className="block text-[#1B0DF8]  hover:bg-[#1B0DF8] hover:text-white transition"
+                    rel="noreferrer"
+                  >
+                    {row.name}
+                  </a>
+                ) : (
+                  row.name
+                )}
+              </div>
+            </td>
+            <td className="px-4 py-3 text-zinc-500">{row.modified}</td>
+            <td className="pl-4 pr-6 py-3 text-zinc-500">{row.kind}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+};
 
 export default ContentTable;

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 
 interface Channel {
   added_to_at: string;
@@ -40,16 +39,11 @@ const formatDate = (dateString: string): string => {
 
 const ContentTable = () => {
   const [channels, setChannels] = useState<Channel[]>([]);
-  // 896698 is me! 💖
   useEffect(() => {
-    axios
-      .get("https://api.are.na/v2/users/896698/channels", {
-        headers: {
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_ARENA_ACCESS_TOKEN}`,
-        },
-      })
-      .then((res) => {
-        const channels = (res.data.channels as Channel[]) || [];
+    fetch("/api/channels")
+      .then((res) => res.json())
+      .then((data) => {
+        const channels = (data.channels as Channel[]) || [];
         const sortedChannels = channels.sort((a, b) =>
           a.added_to_at > b.added_to_at ? -1 : b.added_to_at > a.added_to_at ? 1 : 0,
         );

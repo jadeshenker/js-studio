@@ -62,7 +62,7 @@ const ContentTable = () => {
       .catch((err) => console.log(err));
 
     const playlistId = "4KVoTfuOy5plZd0jKVx8qs";
-    fetch(`/api/playlists/${playlistId}`)
+    fetch(`/api/playlists/${playlistId}`, { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => {
         const playlistedTracks = (data as Playlist).tracks.items;

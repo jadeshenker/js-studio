@@ -1,15 +1,16 @@
-import axios from "axios";
-
 export async function GET() {
   try {
     // 896698 is me! 💖
-    const response = await axios.get("https://api.are.na/v2/users/896698/channels", {
+    const response = await fetch("https://api.are.na/v2/users/896698/channels", {
       headers: {
         Authorization: `Bearer ${process.env.ARENA_ACCESS_TOKEN}`,
       },
+      cache: "no-store",
     });
 
-    return new Response(JSON.stringify(response.data), {
+    const data = await response.json();
+
+    return new Response(JSON.stringify(data), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });

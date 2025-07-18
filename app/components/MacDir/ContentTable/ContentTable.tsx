@@ -1,9 +1,15 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-
+import { Playlist } from "@spotify/web-api-ts-sdk";
 interface Channel {
   added_to_at: string;
+}
+
+interface Repo {
+  name: string;
+  description?: string;
+  updated_at: string;
 }
 
 interface Row {
@@ -38,7 +44,10 @@ const formatDate = (dateString: string): string => {
 };
 
 const ContentTable = () => {
-  const [channels, setChannels] = useState<Channel[]>([]);
+  const [arenaUpdatedAt, setArenaUpdatedAt] = useState<string | undefined>();
+  const [playlistUpdatedAt, setPlaylistUpdatedAt] = useState<string | undefined>();
+  const [ghUpdatedAt, setGhUpdatedAt] = useState<string | undefined>();
+
   useEffect(() => {
     fetch("/api/channels")
       .then((res) => res.json())
@@ -48,9 +57,28 @@ const ContentTable = () => {
           a.added_to_at > b.added_to_at ? -1 : b.added_to_at > a.added_to_at ? 1 : 0,
         );
 
-        setChannels(sortedChannels);
+        setArenaUpdatedAt(sortedChannels[0].added_to_at);
       })
       .catch((err) => console.log(err));
+
+    const playlistId = "4KVoTfuOy5plZd0jKVx8qs";
+    fetch(`/api/playlists/${playlistId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        const playlistedTracks = (data as Playlist).tracks.items;
+        const sortedTracks = playlistedTracks.sort((a, b) => (a.added_at > b.added_at ? -1 : b.added_at > a.added_at ? 1 : 0));
+
+        setPlaylistUpdatedAt(sortedTracks[0].added_at);
+      });
+
+    fetch(`/api/user-repos/jadeshenker`)
+      .then((res) => res.json())
+      .then((data) => {
+        const repos = (data as Repo[]) || [];
+        const sortedRepos = repos.sort((a, b) => (a.updated_at > b.updated_at ? -1 : b.updated_at > a.updated_at ? 1 : 0));
+
+        setGhUpdatedAt(sortedRepos[0].updated_at);
+      });
   }, []);
 
   const rows: Row[] = [
@@ -59,7 +87,7 @@ const ContentTable = () => {
       alt: "love letter",
       name: "are.na",
       kind: "hyperlink",
-      modified: `${channels[0] ? formatDate(channels[0].added_to_at) : "today, probably"}`,
+      modified: `${arenaUpdatedAt ? formatDate(arenaUpdatedAt) : "today, probably"}`,
       link: "https://www.are.na/jade-s-ewpvxvqauig/channels",
     },
     {
@@ -67,7 +95,7 @@ const ContentTable = () => {
       alt: "headphones",
       name: "what i am listening to today",
       kind: "hyperlink",
-      modified: "today, probably",
+      modified: `${playlistUpdatedAt ? formatDate(playlistUpdatedAt) : "today, probably"}`,
       link: "https://open.spotify.com/playlist/4KVoTfuOy5plZd0jKVx8qs?si=bae8fd0e07f7429a",
     },
     {
@@ -75,7 +103,7 @@ const ContentTable = () => {
       alt: "floppy disk",
       name: "github",
       kind: "hyperlink",
-      modified: "past week, maybe",
+      modified: `${ghUpdatedAt ? formatDate(ghUpdatedAt) : "last week, probably"}`,
       link: "https://github.com/jadeshenker",
     },
     {
@@ -83,7 +111,7 @@ const ContentTable = () => {
       alt: "skull",
       name: "linkedin (ick!)",
       kind: "hyperlink",
-      modified: "past week, maybe",
+      modified: "probably wasn't 🖤",
       link: "https://www.linkedin.com/in/jadeshenker",
     },
   ];

@@ -88,7 +88,7 @@ const ContentTable = () => {
       name: "are.na",
       kind: "hyperlink",
       modified: `${arenaUpdatedAt ? formatDate(arenaUpdatedAt) : "today, probably"}`,
-      link: "https://www.are.na/jade-s-ewpvxvqauig/channels",
+      link: "https://www.are.na/jade-s-d2yaygzp528/channels",
     },
     {
       icon: "🎧",

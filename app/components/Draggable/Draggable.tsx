@@ -37,6 +37,9 @@ export default function Draggable({ children, handleSelector }: DraggableProps) 
   });
 
   useEffect(() => {
+    let lastWidth = window.innerWidth;
+    let lastHeight = window.innerHeight;
+
     const animateIn = () => {
       const el = domTarget.current;
       if (!el) return;
@@ -45,10 +48,19 @@ export default function Draggable({ children, handleSelector }: DraggableProps) 
       Promise.all(api.start({ ...centeredPosition, config: config.gentle })).then(() => {});
     };
 
+    const onResize = () => {
+      // Only recenter on actual window size change (avoids spurious resize when e.g. background image changes)
+      if (window.innerWidth !== lastWidth || window.innerHeight !== lastHeight) {
+        lastWidth = window.innerWidth;
+        lastHeight = window.innerHeight;
+        animateIn();
+      }
+    };
+
     requestAnimationFrame(animateIn);
 
-    window.addEventListener("resize", animateIn);
-    return () => window.removeEventListener("resize", animateIn);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, []);
 
   useEffect(() => {

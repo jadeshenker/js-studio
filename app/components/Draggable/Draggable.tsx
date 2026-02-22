@@ -125,6 +125,7 @@ export default function Draggable({ children, handleSelector }: DraggableProps) 
         touchAction: "none",
       }}
       className="fixed z-50"
+      data-magnifier-ignore
     >
       {children}
     </animated.div>

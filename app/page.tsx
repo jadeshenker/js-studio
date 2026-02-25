@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { BACKGROUND_OPTIONS } from "@/components/BackgroundPickerBar/BackgroundPickerBar";
 import BackgroundMagnifier from "@/components/BackgroundMagnifier/BackgroundMagnifier";
 import CommandPanel from "@/components/CommandPanel/CommandPanel";
-import ContentTable from "@/components/MacDir/ContentTable/ContentTable";
+import MacDir from "./components/MacDir/MacDir";
 
 export default function Page() {
   const [backgroundSrc, setBackgroundSrc] = useState<string>(BACKGROUND_OPTIONS[0].src);
@@ -18,7 +18,7 @@ export default function Page() {
         magnifierOn={magnifierOn}
         onMagnifierChange={setMagnifierOn}
       />
-      <ContentTable />
+      <MacDir />
     </BackgroundMagnifier>
   );
 }

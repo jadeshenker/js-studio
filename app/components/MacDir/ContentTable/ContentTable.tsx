@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import { Playlist } from "@spotify/web-api-ts-sdk";
-import Draggable from "@/components/Draggable/Draggable";
 
 interface Channel {
   added_to_at: string;
@@ -117,93 +116,88 @@ const ContentTable = () => {
   ];
 
   return (
-    <Draggable handleSelector=".drag-handle">
-      <div className="mx-auto rounded-xl border border-zinc-800/80 bg-zinc-950/80 shadow-sm backdrop-blur-md font-dm-mono">
-        {/* faux warp prompt */}
-        <div className="drag-handle flex items-center justify-between gap-3 border-b border-zinc-800/70 px-4 py-3">
-          <div className="min-w-0">
-            <div className="truncate text-xs text-zinc-400">
-              <span className="text-zinc-300">jade</span>
-              <span className="text-zinc-600">@</span>
-              <span className="text-zinc-300">js-studio</span>
-              <span className="text-zinc-600">:</span>
-              <span className="text-zinc-300">~/links</span>
-            </div>
-            <div className="mt-0.5 text-sm text-zinc-100">
-              <span className="text-zinc-500">$</span> ls <span className="text-zinc-500">-lah</span>
-            </div>
-          </div>
-
-          <div className="shrink-0 rounded-full border border-zinc-800 bg-zinc-950 px-3 py-1 text-[11px] text-zinc-400">
-            click to open • esc closes viewer
+    <div className="rounded-xl border border-zinc-800/80 bg-zinc-950/80 shadow-sm backdrop-blur-md font-dm-mono">
+      {/* faux warp prompt */}
+      <div className="drag-handle touch-none flex items-center justify-between gap-3 border-b border-zinc-800/70 px-4 py-3">
+        <div className="min-w-0">
+          <div className="truncate text-xs text-zinc-400">
+            <span className="text-zinc-300">jade</span>
+            <span className="text-zinc-600">@</span>
+            <span className="text-zinc-300">dev</span>
+            <span className="text-zinc-600">:</span>
+            <span className="text-zinc-300">~/links</span>
           </div>
         </div>
-
-        <div className="overflow-x-auto">
-          <table className="min-w-full">
-            <thead>
-              <tr className="text-left text-[11px] uppercase tracking-wide text-zinc-500">
-                <th className="px-4 py-2 font-normal">name</th>
-                <th className="px-4 py-2 font-normal">date modified</th>
-                <th className="px-4 py-2 font-normal">kind</th>
-              </tr>
-            </thead>
-
-            <tbody className="text-sm text-zinc-100">
-              {rows.map((row, i) => (
-                <tr key={i} className="border-t border-zinc-800/60 hover:bg-zinc-900/40 transition-colors">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <span className="opacity-90" role="img" aria-label={row.alt}>
-                        {row.icon}
-                      </span>
-
-                      {row.kind === "link" && !row.onClick ? (
-                        <a
-                          target="_blank"
-                          href={row.link}
-                          rel="noreferrer"
-                          className="group inline-flex items-center gap-2 rounded-md px-2 py-1 -mx-2 -my-1 text-zinc-100 hover:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-500 focus:ring-offset-1 focus:ring-offset-zinc-950"
-                        >
-                          <span className="underline decoration-zinc-700 underline-offset-4 group-hover:decoration-zinc-400">
-                            {row.name}
-                          </span>
-                          <span className="text-xs text-zinc-500 group-hover:text-zinc-400">↗</span>
-                        </a>
-                      ) : row.onClick ? (
-                        <button
-                          type="button"
-                          onClick={row.onClick}
-                          className="group inline-flex items-center gap-2 rounded-md px-2 py-1 -mx-2 -my-1 text-zinc-100 hover:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-500 focus:ring-offset-1 focus:ring-offset-zinc-950"
-                        >
-                          <span className="underline decoration-zinc-700 underline-offset-4 group-hover:decoration-zinc-400">
-                            {row.name}
-                          </span>
-                          <span className="text-xs text-zinc-500 group-hover:text-zinc-400">↩︎</span>
-                        </button>
-                      ) : (
-                        <span>{row.name}</span>
-                      )}
-                    </div>
-                  </td>
-
-                  <td className="px-4 py-3 text-zinc-400">{row.modified}</td>
-
-                  <td className="px-4 py-3">
-                    <span className="inline-flex items-center rounded-full border border-zinc-800 bg-zinc-950 px-2 py-0.5 text-[11px] text-zinc-400">
-                      {row.kind}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* subtle bottom fade like a terminal */}
-        <div className="h-3 rounded-b-xl bg-gradient-to-b from-transparent to-zinc-950/80" />
+        {/* @todo re-add when urlviewer is implemented */}
+        {/* <div className="shrink-0 rounded-full border border-zinc-800 bg-zinc-950 px-3 py-1 text-[11px] text-zinc-400">
+          click to open • esc closes viewer
+        </div> */}
       </div>
-    </Draggable>
+
+      <div className="overflow-x-auto">
+        <table className="min-w-full">
+          <thead>
+            <tr className="text-left text-[11px] uppercase tracking-wide text-zinc-500">
+              <th className="px-4 py-2 font-normal">name</th>
+              <th className="px-4 py-2 font-normal">date modified</th>
+              <th className="px-4 py-2 font-normal">kind</th>
+            </tr>
+          </thead>
+
+          <tbody className="text-sm text-zinc-100">
+            {rows.map((row, i) => (
+              <tr key={i} className="border-t border-zinc-800/60 hover:bg-zinc-900/40 transition-colors">
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <span className="opacity-90" role="img" aria-label={row.alt}>
+                      {row.icon}
+                    </span>
+
+                    {row.kind === "link" && !row.onClick ? (
+                      <a
+                        target="_blank"
+                        href={row.link}
+                        rel="noreferrer"
+                        className="group inline-flex items-center gap-2 rounded-md px-2 py-1 -mx-2 -my-1 text-zinc-100 hover:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-500 focus:ring-offset-1 focus:ring-offset-zinc-950"
+                      >
+                        <span className="underline decoration-zinc-700 underline-offset-4 group-hover:decoration-zinc-400">
+                          {row.name}
+                        </span>
+                        <span className="text-xs text-zinc-500 group-hover:text-zinc-400">↗</span>
+                      </a>
+                    ) : row.onClick ? (
+                      <button
+                        type="button"
+                        onClick={row.onClick}
+                        className="group inline-flex items-center gap-2 rounded-md px-2 py-1 -mx-2 -my-1 text-zinc-100 hover:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-500 focus:ring-offset-1 focus:ring-offset-zinc-950"
+                      >
+                        <span className="underline decoration-zinc-700 underline-offset-4 group-hover:decoration-zinc-400">
+                          {row.name}
+                        </span>
+                        <span className="text-xs text-zinc-500 group-hover:text-zinc-400">↩︎</span>
+                      </button>
+                    ) : (
+                      <span>{row.name}</span>
+                    )}
+                  </div>
+                </td>
+
+                <td className="px-4 py-3 text-zinc-400">{row.modified}</td>
+
+                <td className="px-4 py-3">
+                  <span className="inline-flex items-center rounded-full border border-zinc-800 bg-zinc-950 px-2 py-0.5 text-[11px] text-zinc-400">
+                    {row.kind}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* subtle bottom fade like a terminal */}
+      <div className="h-3 rounded-b-xl bg-gradient-to-b from-transparent to-zinc-950/30" />
+    </div>
   );
 };
 

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Playlist } from "@spotify/web-api-ts-sdk";
-import UrlViewer from "@/components/UrlViewer/UrlViewer";
+import Draggable from "@/components/Draggable/Draggable";
 
 interface Channel {
   added_to_at: string;
@@ -24,10 +24,6 @@ interface Row {
   onClick?: () => void;
 }
 
-/**
- * @param dateString datetime string
- * @returns formatted date, ie "May 14, 2025 at 11:29 PM"
- */
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
 
@@ -50,7 +46,6 @@ const ContentTable = () => {
   const [arenaUpdatedAt, setArenaUpdatedAt] = useState<string | undefined>();
   const [playlistUpdatedAt, setPlaylistUpdatedAt] = useState<string | undefined>();
   const [ghUpdatedAt, setGhUpdatedAt] = useState<string | undefined>();
-  const [urlViewerVisible, setUrlViewerVisible] = useState(false);
 
   useEffect(() => {
     fetch("/api/channels")
@@ -90,7 +85,7 @@ const ContentTable = () => {
       icon: "💌",
       alt: "love letter",
       name: "are.na",
-      kind: "hyperlink",
+      kind: "link",
       modified: `${arenaUpdatedAt ? formatDate(arenaUpdatedAt) : "today, probably"}`,
       link: "https://www.are.na/jade-s-ewpvxvqauig/channels",
     },
@@ -98,16 +93,16 @@ const ContentTable = () => {
       icon: "🎧",
       alt: "headphones",
       name: "what i am listening to today",
-      kind: "hyperlink",
+      kind: "link",
       modified: `${playlistUpdatedAt ? formatDate(playlistUpdatedAt) : "today, probably"}`,
       link: "https://open.spotify.com/playlist/4KVoTfuOy5plZd0jKVx8qs?si=bae8fd0e07f7429a",
-      onClick: () => setUrlViewerVisible(true),
+      // onClick: () => openUrlViewer("https://open.spotify.com/playlist/4KVoTfuOy5plZd0jKVx8qs?si=bae8fd0e07f7429a"),
     },
     {
       icon: "💾",
       alt: "floppy disk",
       name: "github",
-      kind: "hyperlink",
+      kind: "link",
       modified: `${ghUpdatedAt ? formatDate(ghUpdatedAt) : "last week, probably"}`,
       link: "https://github.com/jadeshenker",
     },
@@ -115,54 +110,100 @@ const ContentTable = () => {
       icon: "💀",
       alt: "skull",
       name: "linkedin (ick!)",
-      kind: "hyperlink",
+      kind: "link",
       modified: "probably wasn't 🖤",
       link: "https://www.linkedin.com/in/jadeshenker",
     },
   ];
 
   return (
-    <>
-      <table className="min-w-full bg-white">
-        <thead>
-          <tr className="text-left text-zinc-500 text-sm border-t border-t-zinc-200 border-b border-b-zinc-200">
-            <th className="font-normal px-4 py-2">Name</th>
-            <th className="px-4 py-2">Date Modified</th>
-            <th className="font-normal px-4 py-2">Kind</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, i) => (
-            <tr key={i} className={`${i % 2 === 1 ? "bg-zinc-100" : ""} rounded-md text-sm text-zinc-800`}>
-              <td className="px-4 py-3">
-                <div className="flex flex-row align-center">
-                  <span className="pr-2 block" role="img" aria-label={row.alt}>
-                    {row.icon}
-                  </span>
-                  {row.kind === "hyperlink" && !row.onClick ? (
-                    <a
-                      target="_blank"
-                      href={row.link}
-                      className="block text-[#1B0DF8]  hover:bg-[#1B0DF8] hover:text-white transition"
-                      rel="noreferrer"
-                    >
-                      {row.name}
-                    </a>
-                  ) : row.onClick ? (
-                    <button onClick={row.onClick}>{row.name}</button>
-                  ) : (
-                    row.name
-                  )}
-                </div>
-              </td>
-              <td className="px-4 py-3 text-zinc-500">{row.modified}</td>
-              <td className="pl-4 pr-6 py-3 text-zinc-500">{row.kind}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <UrlViewer visible={urlViewerVisible} onClose={() => setUrlViewerVisible(false)} />
-    </>
+    <Draggable handleSelector=".drag-handle">
+      <div className="mx-auto rounded-xl border border-zinc-800/80 bg-zinc-950/80 shadow-sm backdrop-blur-md font-dm-mono">
+        {/* faux warp prompt */}
+        <div className="drag-handle flex items-center justify-between gap-3 border-b border-zinc-800/70 px-4 py-3">
+          <div className="min-w-0">
+            <div className="truncate text-xs text-zinc-400">
+              <span className="text-zinc-300">jade</span>
+              <span className="text-zinc-600">@</span>
+              <span className="text-zinc-300">js-studio</span>
+              <span className="text-zinc-600">:</span>
+              <span className="text-zinc-300">~/links</span>
+            </div>
+            <div className="mt-0.5 text-sm text-zinc-100">
+              <span className="text-zinc-500">$</span> ls <span className="text-zinc-500">-lah</span>
+            </div>
+          </div>
+
+          <div className="shrink-0 rounded-full border border-zinc-800 bg-zinc-950 px-3 py-1 text-[11px] text-zinc-400">
+            click to open • esc closes viewer
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="min-w-full">
+            <thead>
+              <tr className="text-left text-[11px] uppercase tracking-wide text-zinc-500">
+                <th className="px-4 py-2 font-normal">name</th>
+                <th className="px-4 py-2 font-normal">date modified</th>
+                <th className="px-4 py-2 font-normal">kind</th>
+              </tr>
+            </thead>
+
+            <tbody className="text-sm text-zinc-100">
+              {rows.map((row, i) => (
+                <tr key={i} className="border-t border-zinc-800/60 hover:bg-zinc-900/40 transition-colors">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <span className="opacity-90" role="img" aria-label={row.alt}>
+                        {row.icon}
+                      </span>
+
+                      {row.kind === "link" && !row.onClick ? (
+                        <a
+                          target="_blank"
+                          href={row.link}
+                          rel="noreferrer"
+                          className="group inline-flex items-center gap-2 rounded-md px-2 py-1 -mx-2 -my-1 text-zinc-100 hover:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-500 focus:ring-offset-1 focus:ring-offset-zinc-950"
+                        >
+                          <span className="underline decoration-zinc-700 underline-offset-4 group-hover:decoration-zinc-400">
+                            {row.name}
+                          </span>
+                          <span className="text-xs text-zinc-500 group-hover:text-zinc-400">↗</span>
+                        </a>
+                      ) : row.onClick ? (
+                        <button
+                          type="button"
+                          onClick={row.onClick}
+                          className="group inline-flex items-center gap-2 rounded-md px-2 py-1 -mx-2 -my-1 text-zinc-100 hover:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-500 focus:ring-offset-1 focus:ring-offset-zinc-950"
+                        >
+                          <span className="underline decoration-zinc-700 underline-offset-4 group-hover:decoration-zinc-400">
+                            {row.name}
+                          </span>
+                          <span className="text-xs text-zinc-500 group-hover:text-zinc-400">↩︎</span>
+                        </button>
+                      ) : (
+                        <span>{row.name}</span>
+                      )}
+                    </div>
+                  </td>
+
+                  <td className="px-4 py-3 text-zinc-400">{row.modified}</td>
+
+                  <td className="px-4 py-3">
+                    <span className="inline-flex items-center rounded-full border border-zinc-800 bg-zinc-950 px-2 py-0.5 text-[11px] text-zinc-400">
+                      {row.kind}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* subtle bottom fade like a terminal */}
+        <div className="h-3 rounded-b-xl bg-gradient-to-b from-transparent to-zinc-950/80" />
+      </div>
+    </Draggable>
   );
 };
 

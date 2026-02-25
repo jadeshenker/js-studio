@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import { Playlist } from "@spotify/web-api-ts-sdk";
+import UrlViewer from "@/components/UrlViewer/UrlViewer";
+
 interface Channel {
   added_to_at: string;
 }
@@ -19,6 +21,7 @@ interface Row {
   kind: string;
   modified: string;
   link: string;
+  onClick?: () => void;
 }
 
 /**
@@ -47,6 +50,7 @@ const ContentTable = () => {
   const [arenaUpdatedAt, setArenaUpdatedAt] = useState<string | undefined>();
   const [playlistUpdatedAt, setPlaylistUpdatedAt] = useState<string | undefined>();
   const [ghUpdatedAt, setGhUpdatedAt] = useState<string | undefined>();
+  const [urlViewerVisible, setUrlViewerVisible] = useState(false);
 
   useEffect(() => {
     fetch("/api/channels")
@@ -97,6 +101,7 @@ const ContentTable = () => {
       kind: "hyperlink",
       modified: `${playlistUpdatedAt ? formatDate(playlistUpdatedAt) : "today, probably"}`,
       link: "https://open.spotify.com/playlist/4KVoTfuOy5plZd0jKVx8qs?si=bae8fd0e07f7429a",
+      onClick: () => setUrlViewerVisible(true),
     },
     {
       icon: "💾",
@@ -117,42 +122,47 @@ const ContentTable = () => {
   ];
 
   return (
-    <table className="min-w-full bg-white">
-      <thead>
-        <tr className="text-left text-zinc-500 text-sm border-t border-t-zinc-200 border-b border-b-zinc-200">
-          <th className="font-normal px-4 py-2">Name</th>
-          <th className="px-4 py-2">Date Modified</th>
-          <th className="font-normal px-4 py-2">Kind</th>
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((row, i) => (
-          <tr key={i} className={`${i % 2 === 1 ? "bg-zinc-100" : ""} rounded-md text-sm text-zinc-800`}>
-            <td className="px-4 py-3">
-              <div className="flex flex-row align-center">
-                <span className="pr-2 block" role="img" aria-label={row.alt}>
-                  {row.icon}
-                </span>
-                {row.kind === "hyperlink" ? (
-                  <a
-                    target="_blank"
-                    href={row.link}
-                    className="block text-[#1B0DF8]  hover:bg-[#1B0DF8] hover:text-white transition"
-                    rel="noreferrer"
-                  >
-                    {row.name}
-                  </a>
-                ) : (
-                  row.name
-                )}
-              </div>
-            </td>
-            <td className="px-4 py-3 text-zinc-500">{row.modified}</td>
-            <td className="pl-4 pr-6 py-3 text-zinc-500">{row.kind}</td>
+    <>
+      <table className="min-w-full bg-white">
+        <thead>
+          <tr className="text-left text-zinc-500 text-sm border-t border-t-zinc-200 border-b border-b-zinc-200">
+            <th className="font-normal px-4 py-2">Name</th>
+            <th className="px-4 py-2">Date Modified</th>
+            <th className="font-normal px-4 py-2">Kind</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {rows.map((row, i) => (
+            <tr key={i} className={`${i % 2 === 1 ? "bg-zinc-100" : ""} rounded-md text-sm text-zinc-800`}>
+              <td className="px-4 py-3">
+                <div className="flex flex-row align-center">
+                  <span className="pr-2 block" role="img" aria-label={row.alt}>
+                    {row.icon}
+                  </span>
+                  {row.kind === "hyperlink" && !row.onClick ? (
+                    <a
+                      target="_blank"
+                      href={row.link}
+                      className="block text-[#1B0DF8]  hover:bg-[#1B0DF8] hover:text-white transition"
+                      rel="noreferrer"
+                    >
+                      {row.name}
+                    </a>
+                  ) : row.onClick ? (
+                    <button onClick={row.onClick}>{row.name}</button>
+                  ) : (
+                    row.name
+                  )}
+                </div>
+              </td>
+              <td className="px-4 py-3 text-zinc-500">{row.modified}</td>
+              <td className="pl-4 pr-6 py-3 text-zinc-500">{row.kind}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <UrlViewer visible={urlViewerVisible} onClose={() => setUrlViewerVisible(false)} />
+    </>
   );
 };
 

@@ -15,7 +15,7 @@ type CommandPanelProps = {
 export default function CommandPanel({ backgroundSrc, onBackgroundChange, magnifierOn, onMagnifierChange }: CommandPanelProps) {
   return (
     <div
-      className="fixed bottom-3 left-1/2 z-40 -translate-x-1/2 rounded-md border border-zinc-800/80 bg-zinc-900/98 px-4 py-2 shadow-sm backdrop-blur-md font-dm-mono"
+      className="fixed bottom-3 left-1/2 z-40 -translate-x-1/2 rounded-full border border-zinc-800/80 bg-zinc-900/98 px-4 py-2 shadow-sm backdrop-blur-md font-dm-mono"
       data-magnifier-ignore
     >
       <div className="flex items-center gap-6 text-sm text-zinc-100 whitespace-nowrap">

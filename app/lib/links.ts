@@ -112,6 +112,14 @@ export function useLinkRows(): LinkRow[] {
       link: "https://github.com/jadeshenker",
     },
     {
+      icon: "🎸",
+      alt: "ROCKKKKK music",
+      name: "1-800-I-LOVE-MUSIC",
+      kind: "hyperlink",
+      modifiedAt: "",
+      link: "https://www.1-800-i-love-music.com/playlists",
+    },
+    {
       icon: "💀",
       alt: "skull",
       name: "linkedin, if u must!",

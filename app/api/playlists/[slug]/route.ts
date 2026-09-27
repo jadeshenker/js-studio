@@ -11,6 +11,7 @@ async function getAccessToken() {
       "Content-Type": "application/x-www-form-urlencoded",
     },
     body: "grant_type=client_credentials",
+    cache: "no-store",
   });
 
   if (!res.ok) {
@@ -32,6 +33,7 @@ export async function GET(req: NextRequest, { params }: { params: { slug: string
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
+      cache: "no-store",
     });
 
     if (!res.ok) {
@@ -40,6 +42,18 @@ export async function GET(req: NextRequest, { params }: { params: { slug: string
     }
 
     const playlist = await res.json();
+
+    // the playlist object only embeds the first 100 tracks, and new songs are appended
+    // to the end — so for longer playlists, swap in the last page to get the newest adds
+    const tracks = playlist.tracks;
+    if (tracks && tracks.total > tracks.items.length) {
+      const offset = Math.max(0, tracks.total - 100);
+      const lastPage = await fetch(`https://api.spotify.com/v1/playlists/${slug}/tracks?offset=${offset}&limit=100`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        cache: "no-store",
+      });
+      if (lastPage.ok) playlist.tracks = await lastPage.json();
+    }
 
     return new Response(JSON.stringify(playlist), {
       status: 200,

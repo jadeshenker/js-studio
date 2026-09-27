@@ -1,7 +1,7 @@
 export async function GET() {
   try {
     // 896698 is me! 💖
-    const response = await fetch("https://api.are.na/v2/users/896698/channels", {
+    const response = await fetch("https://api.are.na/v2/users/896698/channels?per=100", {
       headers: {
         Authorization: `Bearer ${process.env.ARENA_ACCESS_TOKEN}`,
       },

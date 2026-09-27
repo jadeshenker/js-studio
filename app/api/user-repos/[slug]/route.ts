@@ -5,7 +5,7 @@ export async function GET(req: NextRequest, { params }: { params: { slug: string
   const username = params.slug;
 
   try {
-    const res = await fetch(`https://api.github.com/users/${username}/repos`, {
+    const res = await fetch(`https://api.github.com/users/${username}/repos?sort=pushed&per_page=100`, {
       cache: "no-cache",
     });
     if (!res.ok) {

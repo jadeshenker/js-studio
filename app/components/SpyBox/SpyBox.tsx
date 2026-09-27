@@ -16,6 +16,7 @@ export default function SpyBox() {
     localY: number;
   } | null>(null);
   const [bounds, setBounds] = useState({ width: 0, height: 0 });
+  const [natural, setNatural] = useState({ width: 0, height: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -29,6 +30,17 @@ export default function SpyBox() {
   }, []);
 
   const imageSrc = images.length > 0 ? images[index] : "";
+
+  // Mirror object-cover: scale to fill the container, centered, preserving aspect ratio
+  const coverScale =
+    natural.width > 0 && natural.height > 0
+      ? Math.max(bounds.width / natural.width, bounds.height / natural.height)
+      : 0;
+  const rendered = coverScale
+    ? { width: natural.width * coverScale, height: natural.height * coverScale }
+    : bounds;
+  const offsetX = (bounds.width - rendered.width) / 2;
+  const offsetY = (bounds.height - rendered.height) / 2;
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const underCursor = document.elementFromPoint(e.clientX, e.clientY);
@@ -104,7 +116,18 @@ export default function SpyBox() {
           onMouseLeave={handleMouseLeave}
         >
           {imageSrc ? (
-            <img src={imageSrc} alt="" className="w-full h-full object-cover" draggable={false} />
+            <img
+              src={imageSrc}
+              alt=""
+              className="w-full h-full object-cover"
+              draggable={false}
+              onLoad={(e) =>
+                setNatural({
+                  width: e.currentTarget.naturalWidth,
+                  height: e.currentTarget.naturalHeight,
+                })
+              }
+            />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-zinc-500 font-dm-mono text-sm">No images</div>
           )}
@@ -123,11 +146,11 @@ export default function SpyBox() {
           }}
         >
           <div
-            className="w-full h-full rounded-full overflow-hidden bg-cover bg-no-repeat"
+            className="w-full h-full rounded-full overflow-hidden bg-no-repeat"
             style={{
               backgroundImage: `url('${imageSrc}')`,
-              backgroundSize: `${bounds.width * ZOOM}px ${bounds.height * ZOOM}px`,
-              backgroundPosition: `${-(mouse.localX * ZOOM - LENS_SIZE / 2)}px ${-(mouse.localY * ZOOM - LENS_SIZE / 2)}px`,
+              backgroundSize: `${rendered.width * ZOOM}px ${rendered.height * ZOOM}px`,
+              backgroundPosition: `${-((mouse.localX - offsetX) * ZOOM - LENS_SIZE / 2)}px ${-((mouse.localY - offsetY) * ZOOM - LENS_SIZE / 2)}px`,
             }}
           />
         </div>

@@ -4,13 +4,19 @@ import { useEffect, useState } from "react";
 import type { Playlist } from "@spotify/web-api-ts-sdk";
 
 interface Channel {
+  title: string;
+  slug: string;
+  owner_slug: string;
+  status: string;
   added_to_at: string;
 }
 
 interface Repo {
   name: string;
   description?: string;
-  updated_at: string;
+  html_url: string;
+  fork: boolean;
+  pushed_at: string;
 }
 
 export interface LinkRow {
@@ -49,43 +55,105 @@ export function formatDateShort(dateString: string): string {
   }).format(date);
 }
 
-export function useLinkRows(): LinkRow[] {
-  const [arenaUpdatedAt, setArenaUpdatedAt] = useState<string | undefined>();
-  const [playlistUpdatedAt, setPlaylistUpdatedAt] = useState<string | undefined>();
-  const [ghUpdatedAt, setGhUpdatedAt] = useState<string | undefined>();
+/** Shared between the link rows and the activity log */
+const ICONS = { arena: "💌", spotify: "🎧", github: "💾" };
+
+export interface ActivityEntry {
+  icon: string;
+  date: string;
+  action: string;
+  target: string;
+  link: string;
+}
+
+const ACTIVITY_LIMIT = 8;
+
+const byDateDesc =
+  <T>(key: (item: T) => string) =>
+  (a: T, b: T) =>
+    key(b).localeCompare(key(a));
+
+/** Spotify adds are grouped per day so one listening session reads as one entry */
+function playlistActivity(playlist: Playlist): ActivityEntry[] {
+  const byDay = new Map<string, string[]>();
+  for (const { added_at } of playlist.tracks?.items ?? []) {
+    if (!added_at) continue;
+    const day = new Date(added_at).toDateString();
+    byDay.set(day, [...(byDay.get(day) ?? []), added_at]);
+  }
+  return Array.from(byDay.values()).map((dates) => ({
+    date: dates.sort().at(-1)!,
+    icon: ICONS.spotify,
+    action: dates.length === 1 ? "added a song to" : `added ${dates.length} songs to`,
+    target: playlist.name,
+    link: playlist.external_urls.spotify,
+  }));
+}
+
+function buildActivity(channels: Channel[], playlist: Playlist | undefined, repos: Repo[]): ActivityEntry[] {
+  return [
+    ...channels
+      .filter((c) => c.status !== "private" && c.added_to_at)
+      .map((c) => ({
+        date: c.added_to_at,
+        icon: ICONS.arena,
+        action: "added to are.na channel",
+        target: c.title,
+        link: `https://www.are.na/${c.owner_slug}/${c.slug}`,
+      })),
+    ...(playlist ? playlistActivity(playlist) : []),
+    ...repos
+      .filter((r) => !r.fork && r.pushed_at)
+      .map((r) => ({
+        date: r.pushed_at,
+        icon: ICONS.github,
+        action: "committed to",
+        target: r.name,
+        link: r.html_url,
+      })),
+  ]
+    .sort(byDateDesc((e) => e.date))
+    .slice(0, ACTIVITY_LIMIT);
+}
+
+export function useLinkData(): { rows: LinkRow[]; activity: ActivityEntry[] } {
+  const [channels, setChannels] = useState<Channel[]>([]);
+  const [playlist, setPlaylist] = useState<Playlist | undefined>();
+  const [repos, setRepos] = useState<Repo[]>([]);
 
   useEffect(() => {
     fetch("/api/channels")
       .then((res) => res.json())
-      .then((data) => {
-        const channels = (data.channels as Channel[]) || [];
-        const sorted = channels.sort((a, b) => (a.added_to_at > b.added_to_at ? -1 : b.added_to_at > a.added_to_at ? 1 : 0));
-        setArenaUpdatedAt(sorted[0]?.added_to_at);
-      })
+      .then((data) => setChannels((data.channels as Channel[]) || []))
       .catch(() => {});
 
     fetch("/api/playlists/4KVoTfuOy5plZd0jKVx8qs")
       .then((res) => res.json())
-      .then((data) => {
-        const items = (data as Playlist).tracks?.items ?? [];
-        const sorted = items.sort((a, b) => (a.added_at > b.added_at ? -1 : b.added_at > a.added_at ? 1 : 0));
-        setPlaylistUpdatedAt(sorted[0]?.added_at);
-      })
+      .then((data) => !data.error && setPlaylist(data as Playlist))
       .catch(() => {});
 
     fetch("/api/user-repos/jadeshenker")
       .then((res) => res.json())
-      .then((data) => {
-        const repos = (data as Repo[]) || [];
-        const sorted = repos.sort((a, b) => (a.updated_at > b.updated_at ? -1 : b.updated_at > a.updated_at ? 1 : 0));
-        setGhUpdatedAt(sorted[0]?.updated_at);
-      })
+      .then((data) => Array.isArray(data) && setRepos(data as Repo[]))
       .catch(() => {});
   }, []);
 
-  return [
+  const arenaUpdatedAt = channels
+    .map((c) => c.added_to_at)
+    .sort()
+    .at(-1);
+  const playlistUpdatedAt = playlist?.tracks?.items
+    .map((i) => i.added_at)
+    .sort()
+    .at(-1);
+  const ghUpdatedAt = repos
+    .map((r) => r.pushed_at)
+    .sort()
+    .at(-1);
+
+  const rows: LinkRow[] = [
     {
-      icon: "💌",
+      icon: ICONS.arena,
       alt: "love letter",
       name: "are.na",
       kind: "hyperlink",
@@ -94,7 +162,7 @@ export function useLinkRows(): LinkRow[] {
       link: "https://www.are.na/jade-s-d2yaygzp528/channels",
     },
     {
-      icon: "🎧",
+      icon: ICONS.spotify,
       alt: "headphones",
       name: "what i am listening to today",
       kind: "hyperlink",
@@ -103,7 +171,7 @@ export function useLinkRows(): LinkRow[] {
       link: "https://open.spotify.com/playlist/4KVoTfuOy5plZd0jKVx8qs?si=bae8fd0e07f7429a",
     },
     {
-      icon: "💾",
+      icon: ICONS.github,
       alt: "floppy disk",
       name: "github",
       kind: "hyperlink",
@@ -117,7 +185,7 @@ export function useLinkRows(): LinkRow[] {
       name: "1-800-I-LOVE-MUSIC",
       kind: "hyperlink",
       modifiedAt: "",
-      link: "https://www.1-800-i-love-music.com/playlists",
+      link: "https://www.1-800-i-love-music.com",
     },
     {
       icon: "💀",
@@ -128,4 +196,6 @@ export function useLinkRows(): LinkRow[] {
       link: "https://www.linkedin.com/in/jadeshenker",
     },
   ];
+
+  return { rows, activity: buildActivity(channels, playlist, repos) };
 }

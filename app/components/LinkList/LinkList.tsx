@@ -2,10 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import { Minus, Plus } from "lucide-react";
-import { formatDateShort, useLinkData } from "@/lib/links";
+import { ACTIVITY_LIMIT, formatDateShort, type LinkData } from "@/lib/links";
 
-export default function LinkList() {
-  const { rows, activity } = useLinkData();
+export default function LinkList({ rows, activity, loading }: Pick<LinkData, "rows" | "activity" | "loading">) {
   const [logsOpen, setLogsOpen] = useState(true);
 
   // logs start collapsed on mobile, where they sit below the spy box
@@ -45,20 +44,32 @@ export default function LinkList() {
           ))}
         </ul>
       </div>
-      {activity.length > 0 && (
-        <section className="flex-1 border-t border-black bg-[#faffc7]" aria-label="Recent activity">
-          <button
-            type="button"
-            onClick={() => setLogsOpen((open) => !open)}
-            aria-expanded={logsOpen}
-            aria-controls="activity-log"
-            className="w-full min-h-11 px-4 flex items-center justify-between cursor-pointer text-zinc-600 text-[10px] uppercase tracking-wider font-semibold"
-          >
-            Recent Logs
-            {logsOpen ? <Minus size={14} aria-hidden /> : <Plus size={14} aria-hidden />}
-          </button>
-          <ol id="activity-log" hidden={!logsOpen} className="list-none m-0 px-4 pb-2">
-            {activity.map((entry, i) => (
+      {/* always rendered so the sidebar layout doesn't shift once the data arrives */}
+      <section className="flex-1 border-t border-black bg-[#faffc7]" aria-label="Recent activity">
+        <button
+          type="button"
+          onClick={() => setLogsOpen((open) => !open)}
+          aria-expanded={logsOpen}
+          aria-controls="activity-log"
+          className="w-full min-h-11 px-4 flex items-center justify-between cursor-pointer text-zinc-600 text-[10px] uppercase tracking-wider font-semibold"
+        >
+          Recent Logs
+          {logsOpen ? <Minus size={14} aria-hidden /> : <Plus size={14} aria-hidden />}
+        </button>
+        <ol id="activity-log" hidden={!logsOpen} className="list-none m-0 px-4 pb-6">
+          {loading &&
+            Array.from({ length: ACTIVITY_LIMIT }, (_, i) => (
+              <li key={i} className="pb-1.5 leading-snug" aria-hidden>
+                <span
+                  className="inline-block h-2 align-middle rounded-sm bg-black/10"
+                  style={{ width: `${55 + ((i * 37) % 35)}%` }}
+                />
+              </li>
+            ))}
+          {!loading && activity.length === 0 && <li className="pb-1.5 text-zinc-500">nothing yet</li>}
+          {/* wait for every source, so partial results never sit under the placeholders */}
+          {!loading &&
+            activity.map((entry, i) => (
               <li key={i} className="pb-1.5 leading-snug truncate" title={`${entry.action} ${entry.target}`}>
                 <time dateTime={entry.date} className="text-zinc-500 text-[10px]">
                   {formatDateShort(entry.date)}
@@ -69,9 +80,8 @@ export default function LinkList() {
                 </a>
               </li>
             ))}
-          </ol>
-        </section>
-      )}
+        </ol>
+      </section>
     </nav>
   );
 }

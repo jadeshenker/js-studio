@@ -11,7 +11,7 @@ interface Channel {
   added_to_at: string;
 }
 
-interface Repo {
+export interface Repo {
   name: string;
   description?: string;
   html_url: string;
@@ -66,7 +66,7 @@ export interface ActivityEntry {
   link: string;
 }
 
-const ACTIVITY_LIMIT = 8;
+export const ACTIVITY_LIMIT = 8;
 
 const byDateDesc =
   <T>(key: (item: T) => string) =>
@@ -116,26 +116,33 @@ function buildActivity(channels: Channel[], playlist: Playlist | undefined, repo
     .slice(0, ACTIVITY_LIMIT);
 }
 
-export function useLinkData(): { rows: LinkRow[]; activity: ActivityEntry[] } {
+export interface LinkData {
+  rows: LinkRow[];
+  activity: ActivityEntry[];
+  /** Most recently pushed non-fork repo */
+  latestRepo?: Repo;
+  /** True until every source has responded (or failed) */
+  loading: boolean;
+}
+
+export function useLinkData(): LinkData {
   const [channels, setChannels] = useState<Channel[]>([]);
   const [playlist, setPlaylist] = useState<Playlist | undefined>();
   const [repos, setRepos] = useState<Repo[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/channels")
-      .then((res) => res.json())
-      .then((data) => setChannels((data.channels as Channel[]) || []))
-      .catch(() => {});
-
-    fetch("/api/playlists/4KVoTfuOy5plZd0jKVx8qs")
-      .then((res) => res.json())
-      .then((data) => !data.error && setPlaylist(data as Playlist))
-      .catch(() => {});
-
-    fetch("/api/user-repos/jadeshenker")
-      .then((res) => res.json())
-      .then((data) => Array.isArray(data) && setRepos(data as Repo[]))
-      .catch(() => {});
+    Promise.allSettled([
+      fetch("/api/channels")
+        .then((res) => res.json())
+        .then((data) => setChannels((data.channels as Channel[]) || [])),
+      fetch("/api/playlists/4KVoTfuOy5plZd0jKVx8qs")
+        .then((res) => res.json())
+        .then((data) => !data.error && setPlaylist(data as Playlist)),
+      fetch("/api/user-repos/jadeshenker")
+        .then((res) => res.json())
+        .then((data) => Array.isArray(data) && setRepos(data as Repo[])),
+    ]).then(() => setLoading(false));
   }, []);
 
   const arenaUpdatedAt = channels
@@ -197,5 +204,7 @@ export function useLinkData(): { rows: LinkRow[]; activity: ActivityEntry[] } {
     },
   ];
 
-  return { rows, activity: buildActivity(channels, playlist, repos) };
+  const latestRepo = repos.filter((r) => !r.fork).sort(byDateDesc((r) => r.pushed_at))[0];
+
+  return { rows, activity: buildActivity(channels, playlist, repos), latestRepo, loading };
 }

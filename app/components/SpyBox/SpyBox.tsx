@@ -10,6 +10,7 @@ const ZOOM = 2.8;
 
 export default function SpyBox() {
   const [images, setImages] = useState<string[]>([]);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
   const [index, setIndex] = useState(0);
   const [mouse, setMouse] = useState<{
     viewportX: number;
@@ -19,6 +20,8 @@ export default function SpyBox() {
   } | null>(null);
   const [bounds, setBounds] = useState({ width: 0, height: 0 });
   const [natural, setNatural] = useState({ width: 0, height: 0 });
+  const [loadedSrc, setLoadedSrc] = useState("");
+  const imgRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   // keyed `${imageName}|${clueIndex}|${spotIndex}`, so each image keeps its own progress
   const [found, setFound] = useState<Record<string, true>>({});
@@ -36,10 +39,23 @@ export default function SpyBox() {
         setImages(paths);
         setIndex(paths.length > 0 ? paths.length - 1 : 0);
       })
-      .catch(() => setImages([]));
+      .catch(() => setImages([]))
+      .finally(() => setImagesLoaded(true));
   }, []);
 
   const imageSrc = images.length > 0 ? images[index] : "";
+  const imageReady = imageSrc !== "" && loadedSrc === imageSrc;
+
+  const markLoaded = useCallback((img: HTMLImageElement) => {
+    setNatural({ width: img.naturalWidth, height: img.naturalHeight });
+    setLoadedSrc(img.getAttribute("src") ?? "");
+  }, []);
+
+  // a cached image can finish before React attaches onLoad, so check on mount/switch too
+  useEffect(() => {
+    const img = imgRef.current;
+    if (img?.complete && img.naturalWidth > 0) markLoaded(img);
+  }, [imageSrc, markLoaded]);
   // images are named like background_2026.png
   const imageYear = imageSrc.match(/\d{4}/)?.[0];
 
@@ -124,7 +140,7 @@ export default function SpyBox() {
   const atLast = images.length === 0 || index >= images.length - 1;
 
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-[80vh] max-[850px]:min-h-0 max-[850px]:w-full p-6 max-[850px]:p-3">
+    <div className="relative shrink-0 w-full flex flex-col items-center justify-center min-h-[80vh] max-[850px]:min-h-0 p-6 max-[850px]:p-3">
       <div className="relative max-w-4xl w-full flex flex-col">
         <div
           className="flex items-center justify-start gap-2 w-full bg-zinc-50 p-1 rounded-t-sm border border-zinc-700 font-dm-mono"
@@ -162,22 +178,23 @@ export default function SpyBox() {
           onMouseLeave={handleMouseLeave}
           onClick={handleClick}
         >
+          {(!imagesLoaded || (imageSrc && !imageReady)) && (
+            <div className="absolute inset-0 flex items-center justify-center text-zinc-500 font-dm-mono text-sm">
+              game loading...
+            </div>
+          )}
           {imageSrc ? (
             <img
+              ref={imgRef}
               src={imageSrc}
               alt=""
-              className="w-full h-full object-cover"
+              className={`relative w-full h-full object-cover transition-opacity duration-500 ${imageReady ? "opacity-100" : "opacity-0"}`}
               draggable={false}
-              onLoad={(e) =>
-                setNatural({
-                  width: e.currentTarget.naturalWidth,
-                  height: e.currentTarget.naturalHeight,
-                })
-              }
+              onLoad={(e) => markLoaded(e.currentTarget)}
             />
-          ) : (
+          ) : imagesLoaded ? (
             <div className="w-full h-full flex items-center justify-center text-zinc-500 font-dm-mono text-sm">No images</div>
-          )}
+          ) : null}
 
           {/* spot markers in image pixels; "slice" crops exactly like object-cover */}
           {natural.width > 0 && (
@@ -242,11 +259,16 @@ export default function SpyBox() {
           )}
         </div>
 
-        {imageSrc && (
-          <div className="pt-2 px-1 text-center font-dm-mono text-[10px] text-zinc-500">
-            {imageYear ? `my desktop, ${imageYear}` : "my desktop"} · {index + 1} of {images.length}
-          </div>
-        )}
+        {/* rendered (empty) while loading so its line height is already reserved */}
+        <div className="pt-2 px-1 text-center font-dm-mono text-[10px] text-zinc-500">
+          {imageSrc ? (
+            <>
+              {imageYear ? `my desktop, ${imageYear}` : "my desktop"} · {index + 1} of {images.length}
+            </>
+          ) : (
+            "\u00a0"
+          )}
+        </div>
 
         {editMode && (
           <div className="pt-1 px-1 font-dm-mono text-[10px] text-fuchsia-600">
@@ -255,12 +277,14 @@ export default function SpyBox() {
           </div>
         )}
 
-        {clues.length > 0 && (
+        {/* shown while images load too (with a placeholder row) so the page below doesn't jump */}
+        {(clues.length > 0 || !imagesLoaded) && (
           <div className="pt-3 px-1 font-dm-mono text-xs text-zinc-800">
             <div className="pb-1.5 text-zinc-600 text-[10px] uppercase tracking-wider font-semibold">
               {allFound ? "you found everything <3" : "i spy..."}
             </div>
             <ul className="list-none pl-0 m-0 flex flex-wrap gap-x-5 gap-y-1.5">
+              {!imagesLoaded && <li aria-hidden className="h-[18px] w-3/4 rounded-sm bg-black/10" />}
               {clues.map((clue) => {
                 const count = foundIn(clue);
                 const done = count >= needed(clue);

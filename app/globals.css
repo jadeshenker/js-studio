@@ -23,6 +23,14 @@ body {
   background-color: #fafaf8;
 }
 
+/* aqua graph-paper grid behind the spy box */
+.bg-grid {
+  background-image:
+    linear-gradient(to right, rgb(138 216 216 / 0.45) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(138 216 216 / 0.45) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
 .font-dm-mono {
   font-family: var(--font-dm-mono), monospace;
 }

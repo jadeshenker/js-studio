@@ -46,7 +46,7 @@ export default function LinkList() {
         </ul>
       </div>
       {activity.length > 0 && (
-        <section className="flex-1 border-t border-black bg-[#f0ff90]" aria-label="Recent activity">
+        <section className="flex-1 border-t border-black bg-[#faffc7]" aria-label="Recent activity">
           <button
             type="button"
             onClick={() => setLogsOpen((open) => !open)}

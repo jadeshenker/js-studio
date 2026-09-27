@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Minus, Plus } from "lucide-react";
 import { formatDateShort, useLinkData } from "@/lib/links";
 
@@ -8,9 +8,14 @@ export default function LinkList() {
   const { rows, activity } = useLinkData();
   const [logsOpen, setLogsOpen] = useState(true);
 
+  // logs start collapsed on mobile, where they sit below the spy box
+  useEffect(() => {
+    if (window.matchMedia("(max-width: 850px)").matches) setLogsOpen(false);
+  }, []);
+
   return (
     <nav
-      className="shrink-0 w-[460px] max-[850px]:w-full flex flex-col font-dm-mono text-xs text-zinc-800 border-r border-black max-[850px]:border-r-0 max-[850px]:border-b bg-[#39ff14] overflow-y-auto"
+      className="shrink-0 w-[460px] max-[850px]:w-full max-[850px]:order-2 flex flex-col font-dm-mono text-xs text-zinc-800 border-r border-black max-[850px]:border-r-0 max-[850px]:border-y bg-[#39ff14] overflow-y-auto max-[850px]:overflow-visible"
       aria-label="Contents"
     >
       <div className="px-4 pb-2">
@@ -49,12 +54,12 @@ export default function LinkList() {
             aria-controls="activity-log"
             className="w-full min-h-11 px-4 flex items-center justify-between cursor-pointer text-zinc-600 text-[10px] uppercase tracking-wider font-semibold"
           >
-            Logs
+            Recent Logs
             {logsOpen ? <Minus size={14} aria-hidden /> : <Plus size={14} aria-hidden />}
           </button>
           <ol id="activity-log" hidden={!logsOpen} className="list-none m-0 px-4 pb-2">
             {activity.map((entry, i) => (
-              <li key={i} className="pb-1.5 leading-snug">
+              <li key={i} className="pb-1.5 leading-snug truncate" title={`${entry.action} ${entry.target}`}>
                 <time dateTime={entry.date} className="text-zinc-500 text-[10px]">
                   {formatDateShort(entry.date)}
                 </time>{" "}

@@ -25,7 +25,7 @@ export interface LinkRow {
   name: string;
   kind: string;
   modifiedAt: string;
-  /** Short date for tag, e.g. "Mar 8, 2026" */
+  /** Short date for tag, e.g. "Mar 8" */
   modifiedAtShort?: string;
   link: string;
 }
@@ -45,13 +45,13 @@ function formatDate(dateString: string): string {
   return `${d} at ${t}`;
 }
 
-/** Short form for tag display, e.g. "Mar 8, 2026" */
+/** Short form for tag display, e.g. "Mar 8" this year, "Mar 8, 2025" otherwise */
 export function formatDateShort(dateString: string): string {
   const date = new Date(dateString);
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
-    year: "numeric",
+    year: date.getFullYear() === new Date().getFullYear() ? undefined : "numeric",
   }).format(date);
 }
 

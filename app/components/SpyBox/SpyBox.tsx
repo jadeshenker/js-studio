@@ -33,12 +33,8 @@ export default function SpyBox() {
 
   // Mirror object-cover: scale to fill the container, centered, preserving aspect ratio
   const coverScale =
-    natural.width > 0 && natural.height > 0
-      ? Math.max(bounds.width / natural.width, bounds.height / natural.height)
-      : 0;
-  const rendered = coverScale
-    ? { width: natural.width * coverScale, height: natural.height * coverScale }
-    : bounds;
+    natural.width > 0 && natural.height > 0 ? Math.max(bounds.width / natural.width, bounds.height / natural.height) : 0;
+  const rendered = coverScale ? { width: natural.width * coverScale, height: natural.height * coverScale } : bounds;
   const offsetX = (bounds.width - rendered.width) / 2;
   const offsetY = (bounds.height - rendered.height) / 2;
 
@@ -78,7 +74,7 @@ export default function SpyBox() {
   const atLast = images.length === 0 || index >= images.length - 1;
 
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-[80vh] p-6">
+    <div className="relative flex flex-col items-center justify-center min-h-[80vh] max-[850px]:min-h-0 max-[850px]:w-full p-6 max-[850px]:p-3">
       <div className="relative max-w-4xl w-full flex flex-col">
         <div
           className="flex items-center justify-start gap-2 w-full bg-zinc-50 p-1 rounded-t-sm border border-zinc-700 font-dm-mono"

@@ -20,20 +20,16 @@ export interface Repo {
 }
 
 export interface LinkRow {
-  icon: string;
-  alt: string;
   name: string;
   kind: string;
   modifiedAt: string;
-  /** Short date for tag, e.g. "Mar 8" */
-  modifiedAtShort?: string;
   link: string;
 }
 
-function formatDate(dateString: string): string {
+export function formatDate(dateString: string): string {
   const date = new Date(dateString);
   const d = new Intl.DateTimeFormat("en-US", {
-    month: "long",
+    month: "short",
     day: "numeric",
     year: "numeric",
   }).format(date);
@@ -55,18 +51,15 @@ export function formatDateShort(dateString: string): string {
   }).format(date);
 }
 
-/** Shared between the link rows and the activity log */
-const ICONS = { arena: "💌", spotify: "🎧", github: "💾" };
-
 export interface ActivityEntry {
-  icon: string;
+  type: "are.na" | "playlist" | "github";
   date: string;
   action: string;
   target: string;
   link: string;
 }
 
-export const ACTIVITY_LIMIT = 8;
+const ACTIVITY_LIMIT = 8;
 
 const byDateDesc =
   <T>(key: (item: T) => string) =>
@@ -83,7 +76,7 @@ function playlistActivity(playlist: Playlist): ActivityEntry[] {
   }
   return Array.from(byDay.values()).map((dates) => ({
     date: dates.sort().at(-1)!,
-    icon: ICONS.spotify,
+    type: "playlist" as const,
     action: dates.length === 1 ? "added a song to" : `added ${dates.length} songs to`,
     target: playlist.name,
     link: playlist.external_urls.spotify,
@@ -96,7 +89,7 @@ function buildActivity(channels: Channel[], playlist: Playlist | undefined, repo
       .filter((c) => c.status !== "private" && c.added_to_at)
       .map((c) => ({
         date: c.added_to_at,
-        icon: ICONS.arena,
+        type: "are.na" as const,
         action: "added to are.na channel",
         target: c.title,
         link: `https://www.are.na/${c.owner_slug}/${c.slug}`,
@@ -106,7 +99,7 @@ function buildActivity(channels: Channel[], playlist: Playlist | undefined, repo
       .filter((r) => !r.fork && r.pushed_at)
       .map((r) => ({
         date: r.pushed_at,
-        icon: ICONS.github,
+        type: "github" as const,
         action: "committed to",
         target: r.name,
         link: r.html_url,
@@ -160,46 +153,33 @@ export function useLinkData(): LinkData {
 
   const rows: LinkRow[] = [
     {
-      icon: ICONS.arena,
-      alt: "love letter",
-      name: "are.na",
+      name: "my are.na",
       kind: "hyperlink",
       modifiedAt: arenaUpdatedAt ? formatDate(arenaUpdatedAt) : "today, probably",
-      modifiedAtShort: arenaUpdatedAt ? formatDateShort(arenaUpdatedAt) : "—",
       link: "https://www.are.na/jade-s-d2yaygzp528/channels",
     },
     {
-      icon: ICONS.spotify,
-      alt: "headphones",
       name: "what i am listening to today",
       kind: "hyperlink",
       modifiedAt: playlistUpdatedAt ? formatDate(playlistUpdatedAt) : "today, probably",
-      modifiedAtShort: playlistUpdatedAt ? formatDateShort(playlistUpdatedAt) : "—",
       link: "https://open.spotify.com/playlist/4KVoTfuOy5plZd0jKVx8qs?si=bae8fd0e07f7429a",
     },
     {
-      icon: ICONS.github,
-      alt: "floppy disk",
-      name: "github",
+      name: "my github",
       kind: "hyperlink",
       modifiedAt: ghUpdatedAt ? formatDate(ghUpdatedAt) : "last week, probably",
-      modifiedAtShort: ghUpdatedAt ? formatDateShort(ghUpdatedAt) : "—",
       link: "https://github.com/jadeshenker",
     },
     {
-      icon: "🎸",
-      alt: "ROCKKKKK music",
       name: "1-800-I-LOVE-MUSIC",
       kind: "hyperlink",
       modifiedAt: "",
       link: "https://www.1-800-i-love-music.com",
     },
     {
-      icon: "💀",
-      alt: "skull",
       name: "linkedin, if u must!",
       kind: "hyperlink",
-      modifiedAt: "probably wasn't 🖤",
+      modifiedAt: "probably wasn't",
       link: "https://www.linkedin.com/in/jadeshenker",
     },
   ];

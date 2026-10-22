@@ -6,7 +6,7 @@ body {
   padding: 0;
   height: 100%;
   overflow: hidden;
-  background-color: #fafaf8;
+  background-color: #d8f2cc;
 }
 
 /* mobile layout is a normal scrolling page (see app/page.tsx) */
@@ -20,10 +20,9 @@ body {
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background-color: #fafaf8;
+  background-color: #d8f2cc;
 }
 
-/* blinking text cursor at the end of the about me document */
 .caret {
   display: inline-block;
   width: 1px;
@@ -38,6 +37,87 @@ body {
   50% {
     opacity: 0;
   }
+}
+
+.bg-desktop {
+  background: #d8f2cc url("/images/collage.png") center / min(50vw, 1512px) auto no-repeat fixed;
+}
+
+@media (max-width: 850px) {
+  .bg-desktop {
+    background-size: 90vw auto;
+  }
+}
+
+.aqua-button {
+  display: inline-block;
+  font: inherit;
+  margin: 0 0.15em;
+  padding: 0.4em 0.9em;
+  line-height: 1;
+  text-box: trim-both cap alphabetic;
+  font-weight: 500;
+  color: #111;
+  border: 1px solid #a9a9a9;
+  border-radius: 6px;
+  background: linear-gradient(to bottom, #ffffff 0%, #f6f6f6 45%, #e9e9e9 55%, #f3f3f3 100%);
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.25),
+    inset 0 1px 0 #ffffff,
+    inset 0 -2px 3px rgb(0 0 0 / 0.05);
+  cursor: pointer;
+  user-select: none;
+}
+
+/* firefox has no text-box trimming, so all-caps text sits high */
+@supports not (text-box: trim-both cap alphabetic) {
+  .aqua-button {
+    padding-top: 0.45em;
+    padding-bottom: 0.3em;
+  }
+}
+
+.aqua-button:active {
+  background: linear-gradient(to bottom, #e6e6e6 0%, #dcdcdc 45%, #d0d0d0 55%, #dddddd 100%);
+  box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.2);
+}
+
+.player-range {
+  appearance: none;
+  height: 5px;
+  margin: 0;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.14);
+  box-shadow: inset 0 1px 1px rgb(0 0 0 / 0.15);
+  cursor: pointer;
+}
+
+.player-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 8px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1px solid #a1a1a1;
+  background: linear-gradient(to bottom, #ffffff, #e2e2e2);
+  box-shadow: 0 1px 1px rgb(0 0 0 / 0.2);
+}
+
+.player-range::-moz-range-thumb {
+  width: 8px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1px solid #a1a1a1;
+  background: linear-gradient(to bottom, #ffffff, #e2e2e2);
+  box-shadow: 0 1px 1px rgb(0 0 0 / 0.2);
+}
+
+.player-range:focus-visible {
+  outline: 2px solid rgb(37 99 235 / 0.5);
+  outline-offset: 2px;
+}
+
+.parenthetical {
+  color: color-mix(in srgb, currentColor 60%, transparent);
 }
 
 .font-dm-mono {

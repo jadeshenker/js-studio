@@ -23,12 +23,21 @@ body {
   background-color: #fafaf8;
 }
 
-/* aqua graph-paper grid behind the spy box */
-.bg-grid {
-  background-image:
-    linear-gradient(to right, rgb(138 216 216 / 0.45) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(138 216 216 / 0.45) 1px, transparent 1px);
-  background-size: 24px 24px;
+/* blinking text cursor at the end of the about me document */
+.caret {
+  display: inline-block;
+  width: 1px;
+  height: 1.1em;
+  margin-left: 1px;
+  vertical-align: text-bottom;
+  background: currentColor;
+  animation: blink 1.06s steps(1) infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
 }
 
 .font-dm-mono {

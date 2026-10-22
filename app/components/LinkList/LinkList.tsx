@@ -7,7 +7,7 @@ import { ACTIVITY_LIMIT, formatDateShort, type LinkData } from "@/lib/links";
 export default function LinkList({ rows, activity, loading }: Pick<LinkData, "rows" | "activity" | "loading">) {
   const [logsOpen, setLogsOpen] = useState(true);
 
-  // logs start collapsed on mobile, where they sit below the spy box
+  // logs start collapsed on mobile, where they sit below the editor window
   useEffect(() => {
     if (window.matchMedia("(max-width: 850px)").matches) setLogsOpen(false);
   }, []);

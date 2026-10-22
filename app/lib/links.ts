@@ -133,7 +133,7 @@ export function useLinkData(): LinkData {
 
   useEffect(() => {
     Promise.allSettled([
-      fetch("/api/channels")
+      fetch("/api/channels", { cache: "no-store" })
         .then((res) => res.json())
         .then((data) => setChannels((data.channels as Channel[]) || [])),
       fetch("/api/playlists/4KVoTfuOy5plZd0jKVx8qs")

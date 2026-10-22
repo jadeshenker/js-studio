@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     // 896698 is me! 💖
@@ -8,16 +10,27 @@ export async function GET() {
       cache: "no-store",
     });
 
+    if (!response.ok) {
+      throw new Error(`Are.na API error: ${response.status}`);
+    }
+
     const data = await response.json();
 
     return new Response(JSON.stringify(data), {
       status: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-store",
+      },
     });
     //eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-store",
+      },
     });
   }
 }

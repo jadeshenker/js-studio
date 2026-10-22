@@ -12,9 +12,9 @@ export default function AboutMe({ latestRepo }: { latestRepo?: Repo }) {
   return (
     <section
       aria-label="About me"
-      className="shrink-0 w-full max-w-4xl px-6 pb-16 max-[850px]:px-3 max-[850px]:pb-10 font-dm-mono text-xs text-zinc-800"
+      className="shrink-0 w-full px-6 pb-16 max-[850px]:px-3 max-[850px]:pb-10 font-dm-mono text-xs text-zinc-800"
     >
-      <div className="border-t border-black pt-4">
+      <div className="max-w-4xl mx-auto border-t border-black pt-4">
         <h2 className="m-0 pb-3 text-zinc-600 text-[10px] uppercase tracking-wider font-semibold">About me</h2>
 
         <div className="grid grid-cols-[2fr_1fr] gap-8 max-[850px]:grid-cols-1 max-[850px]:gap-6">

@@ -132,7 +132,7 @@ export function useLinkData(): LinkData {
       fetch("/api/playlists/4KVoTfuOy5plZd0jKVx8qs")
         .then((res) => res.json())
         .then((data) => !data.error && setPlaylist(data as Playlist)),
-      fetch("/api/user-repos/jadeshenker")
+      fetch("/api/user-repos/jadeshenker", { cache: "no-store" })
         .then((res) => res.json())
         .then((data) => Array.isArray(data) && setRepos(data as Repo[])),
     ]).then(() => setLoading(false));
